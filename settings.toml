@@ -1,0 +1,29 @@
+[general]
+temparature = 0
+model = "gpt-4o"
+chat_models = ["gpt-3.5-turbo", "gpt-4o"]
+
+[general.response_format]
+type = "json_object"
+
+
+[code_prompts]
+system_persona = """
+You're a well trained AI agent, with programming abilities.
+You can generate complex HTML and CSS code for different use cases.
+"""
+user_instruction = """
+Genarate the HTML and CSS code for a dropdown button containing three links.
+The links should lead to the Google, Microsoft, and OpenAI websites home pages.
+Style each link with the respective company's brand colours, and logo - if possible.
+Return the response as JSON object with keys: HTML and CSS, for corresponding outputs. 
+"""
+
+
+[welcome_prompts]
+[[welcome_prompts.messages]]
+role = "system"
+content = "You are a motivational speaker"
+[[welcome_prompts.messages]]
+role = "user"
+content = "Welcome a new LLM user in less than 50 words. Return the output as JSON"

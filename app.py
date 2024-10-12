@@ -14,12 +14,12 @@ with settings_path.open("rb") as settings_file:
     g_settings = SETTINGS['general']
 
 
-def welcome_new_user():
+def welcome_response_new_user():
     """
     Genarate greeting for a new LLM user and save the response to a new file.
-    Multiple runs will update the file with contants new responses.
+    Multiple run will update appropriate file in `/responses` with the new content.
     """
-    # make a request for a response from assistant
+    # Make a request for a response from assistant
     # with ``messages`` arg completely configured in settings
     response = client.chat.completions.create(
         model=g_settings['model'],
@@ -27,9 +27,9 @@ def welcome_new_user():
         response_format=g_settings['response_format']
     )
 
-    # Check for welcome.json file and get the data
+    # Check for responses/welcome.json file and get the data
     try:
-        with open("welcome.json", "r") as fp:
+        with open("responses/welcome.json", "r") as fp:
             all_data = json.load(fp)
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         all_data = []
@@ -38,16 +38,19 @@ def welcome_new_user():
     all_data.append(response.choices[0].message.content)
 
     # Write all data back to the file
-    with open("welcome.json", "w") as fp:
+    with open("responses/welcome.json", "w") as fp:
         json.dump(all_data, fp, indent=4)
+    
+    print("Welcome note genarated and written to file.")
 
 
 def generate_code_for_dropdown():
     """
     Genarate HTML and CSS code for a dropdown button and save the response to a new file.
-    Multiple runs will update the file with contants new responses.
+    Multiple run will update appropriate file in `/responses` with the new content.
+    Also extract and write the HTML and CSS in separate `.html` and `.css` files.
     """
-    # make a request for a response from assistant
+    # Make a request for a response from assistant
     # with ``messages`` arg partly configured in settings
     response = client.chat.completions.create(
         model=g_settings['model'],
@@ -57,24 +60,70 @@ def generate_code_for_dropdown():
         ]
     )
 
-    # Check for dropdown_code.json file and get the data
+    # Check for responses/dropdown.json file and get the data
     try:
-        with open("dropdown_code.json", "r") as fp:
+        with open("responses/dropdown.json", "r") as fp:
             all_data = json.load(fp)
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         all_data = []
 
     # Append new data to existing one
-    all_data.append(response.choices[0].message.content)
+    content = response.choices[0].message.content
+    all_data.append(content)
 
-    # Write all data back into dropdown_code.json
-    with open("dropdown_code.json", "w") as fp:
+    # Write all data back into /responses/dropdown.json
+    with open("responses/dropdown.json", "w") as fp:
         json.dump(all_data, fp, indent=4)
+    
+    # UPDATE /dropdowns 
+    # WITH THE NEW DATA
+
+    # Extract the code part of the content
+    code_str = ""
+    # ``` separates the json'd code from the 
+    # rest of the strings at both start and end
+    for s in content.split('```'):
+        # check that content meets the specified settings
+        if s.startswith('json') \
+            and any(t in s for t in ["'HTML':", '"HTML":']) \
+            and any(t in s for t in ['"CSS":', "'CSS':"]):
+            code_str = s
+            break
+    
+    # Raise exception if code_str is ""
+    if not code_str:
+        raise ValueError("Content does not meet specified settings")
+    
+    # Remove "json" at the start of code_str
+    code_str = code_str[4:]
+
+    # Specify/create folder for new data, 
+    # makes use of len(all_data) to achieve uniquness
+    folder = f"dropdowns/r{len(all_data)}"
+    Path(folder).mkdir(parents=True, exist_ok=True)
+    
+    # Write the html/css code in subscriptable json file
+    with open(f"{folder}/code.json", "w", encoding="utf-8") as f:
+        f.write(code_str)
+    
+    # Read the json file to access the code
+    with open(f"{folder}/code.json", "r") as f:
+        code = json.load(f)
+    
+    # Write the HTML code into it's own file
+    with open(f"{folder}/index.html", "w", encoding="utf-8") as f:
+        f.write(code['HTML'])
+    
+    # Write the CSS code into it's own file
+    with open(f"{folder}/styles.css", "w", encoding="utf-8") as f:
+        f.write(code['CSS'])
+    
+    print(f"Dropdown code genarated and written to {folder}.")
 
 
 if __name__ == "__main__":
 
-    welcome_new_user()
+    welcome_response_new_user()
 
     generate_code_for_dropdown()
 

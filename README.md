@@ -1,5 +1,7 @@
-I tried prompt engineering with Python for the first time today: quite interesting and fulfilling!
+I tried prompt engineering with Python and OpenAI API for the first time today.
 
-I'll definitely pay more attention moving forward.
+Used it to genarte HTML and CSS code for a dropdown button with 3 links, returned as JSON. Also generated some welcome note.
 
-Ran the code three times with the same settings and got three different results with increasing degrees of accuracy and finishing touches.
+I ran the code 3 times with the same settings and got 3 different results (in `/responses` folder) with increasing degrees of accuracy and finishing touches. I extracted the actual code into `/dropdowns` folder.
+
+It's quite interesting and fulfilling! I'll definitely pay more attention moving forward.
